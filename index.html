@@ -1,15 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>麻將抽牌</title>
 
-<html><body style='text-align:center'>
-<h2>麻將抽牌</h2>
-<button onclick='draw()'>抽牌</button>
-<button onclick='resetDeck()'>重洗</button>
-<div><p id='left'></p><img id='img' height=180><h3 id='name'></h3></div>
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Segoe UI","Microsoft JhengHei",sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#1e3c72,#2a5298);
+}
+
+.container{
+    width:430px;
+    max-width:90%;
+    background:#fff;
+    border-radius:20px;
+    padding:30px;
+    text-align:center;
+    box-shadow:0 20px 40px rgba(0,0,0,.25);
+}
+
+h1{
+    margin-bottom:20px;
+    color:#222;
+}
+
+.buttons{
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    margin-bottom:20px;
+}
+
+button{
+    border:none;
+    border-radius:10px;
+    padding:12px 20px;
+    color:#fff;
+    cursor:pointer;
+    font-size:16px;
+    transition:.2s;
+}
+
+button:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 18px rgba(0,0,0,.2);
+}
+
+button:active{
+    transform:scale(.96);
+}
+
+.draw{
+    background:#2ecc71;
+}
+
+.reset{
+    background:#e67e22;
+}
+
+#left{
+    font-size:20px;
+    font-weight:bold;
+    color:#444;
+    margin-bottom:15px;
+}
+
+#img{
+    height:200px;
+    background:#f5f5f5;
+    border-radius:12px;
+    padding:8px;
+    box-shadow:0 8px 18px rgba(0,0,0,.15);
+}
+
+#name{
+    margin-top:12px;
+    font-size:28px;
+    color:#222;
+    min-height:36px;
+}
+
+.history-title{
+    margin-top:30px;
+    margin-bottom:10px;
+}
+
+.history{
+    height:220px;
+    overflow-y:auto;
+    border:1px solid #ddd;
+    border-radius:10px;
+    background:#fafafa;
+    padding:10px;
+    text-align:left;
+}
+
+.history-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:8px 10px;
+    margin-bottom:6px;
+    background:white;
+    border-radius:6px;
+    box-shadow:0 1px 3px rgba(0,0,0,.08);
+}
+
+.history-item:first-child{
+    background:#e8f5e9;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🀄 麻將抽牌</h1>
+
+    <div class="buttons">
+        <button class="draw" onclick="draw()">🎴 抽牌</button>
+        <button class="reset" onclick="resetDeck()">🔄 重洗</button>
+    </div>
+
+    <p id="left"></p>
+
+    <img id="img" alt="Mahjong Tile">
+
+    <h2 id="name"></h2>
+
+    <h3 class="history-title">抽牌紀錄</h3>
+
+    <div id="history" class="history"></div>
+
+</div>
+
 <script>
-const deck0=[{"name": "東", "file": "tile_0.png"}, {"name": "東", "file": "tile_1.png"}, {"name": "東", "file": "tile_2.png"}, {"name": "東", "file": "tile_3.png"}, {"name": "一萬", "file": "tile_4.png"}, {"name": "一萬", "file": "tile_5.png"}, {"name": "一萬", "file": "tile_6.png"}, {"name": "一萬", "file": "tile_7.png"}, {"name": "一筒", "file": "tile_8.png"}, {"name": "一筒", "file": "tile_9.png"}, {"name": "一筒", "file": "tile_10.png"}, {"name": "一筒", "file": "tile_11.png"}, {"name": "一索", "file": "tile_12.png"}, {"name": "一索", "file": "tile_13.png"}, {"name": "一索", "file": "tile_14.png"}, {"name": "一索", "file": "tile_15.png"}, {"name": "西", "file": "tile_16.png"}, {"name": "西", "file": "tile_17.png"}, {"name": "西", "file": "tile_18.png"}, {"name": "西", "file": "tile_19.png"}, {"name": "二萬", "file": "tile_20.png"}, {"name": "二萬", "file": "tile_21.png"}, {"name": "二萬", "file": "tile_22.png"}, {"name": "二萬", "file": "tile_23.png"}, {"name": "二筒", "file": "tile_24.png"}, {"name": "二筒", "file": "tile_25.png"}, {"name": "二筒", "file": "tile_26.png"}, {"name": "二筒", "file": "tile_27.png"}, {"name": "二索", "file": "tile_28.png"}, {"name": "二索", "file": "tile_29.png"}, {"name": "二索", "file": "tile_30.png"}, {"name": "二索", "file": "tile_31.png"}, {"name": "南", "file": "tile_32.png"}, {"name": "南", "file": "tile_33.png"}, {"name": "南", "file": "tile_34.png"}, {"name": "南", "file": "tile_35.png"}, {"name": "三萬", "file": "tile_36.png"}, {"name": "三萬", "file": "tile_37.png"}, {"name": "三萬", "file": "tile_38.png"}, {"name": "三萬", "file": "tile_39.png"}, {"name": "三筒", "file": "tile_40.png"}, {"name": "三筒", "file": "tile_41.png"}, {"name": "三筒", "file": "tile_42.png"}, {"name": "三筒", "file": "tile_43.png"}, {"name": "三索", "file": "tile_44.png"}, {"name": "三索", "file": "tile_45.png"}, {"name": "三索", "file": "tile_46.png"}, {"name": "三索", "file": "tile_47.png"}, {"name": "北", "file": "tile_48.png"}, {"name": "北", "file": "tile_49.png"}, {"name": "北", "file": "tile_50.png"}, {"name": "北", "file": "tile_51.png"}, {"name": "四萬", "file": "tile_52.png"}, {"name": "四萬", "file": "tile_53.png"}, {"name": "四萬", "file": "tile_54.png"}, {"name": "四萬", "file": "tile_55.png"}, {"name": "四筒", "file": "tile_56.png"}, {"name": "四筒", "file": "tile_57.png"}, {"name": "四筒", "file": "tile_58.png"}, {"name": "四筒", "file": "tile_59.png"}, {"name": "四索", "file": "tile_60.png"}, {"name": "四索", "file": "tile_61.png"}, {"name": "四索", "file": "tile_62.png"}, {"name": "四索", "file": "tile_63.png"}, {"name": "中", "file": "tile_64.png"}, {"name": "中", "file": "tile_65.png"}, {"name": "中", "file": "tile_66.png"}, {"name": "中", "file": "tile_67.png"}, {"name": "伍萬", "file": "tile_68.png"}, {"name": "伍萬", "file": "tile_69.png"}, {"name": "伍萬", "file": "tile_70.png"}, {"name": "伍萬", "file": "tile_71.png"}, {"name": "五筒", "file": "tile_72.png"}, {"name": "五筒", "file": "tile_73.png"}, {"name": "五筒", "file": "tile_74.png"}, {"name": "五筒", "file": "tile_75.png"}, {"name": "五索", "file": "tile_76.png"}, {"name": "五索", "file": "tile_77.png"}, {"name": "五索", "file": "tile_78.png"}, {"name": "五索", "file": "tile_79.png"}, {"name": "發", "file": "tile_80.png"}, {"name": "發", "file": "tile_81.png"}, {"name": "發", "file": "tile_82.png"}, {"name": "發", "file": "tile_83.png"}, {"name": "六萬", "file": "tile_84.png"}, {"name": "六萬", "file": "tile_85.png"}, {"name": "六萬", "file": "tile_86.png"}, {"name": "六萬", "file": "tile_87.png"}, {"name": "六筒", "file": "tile_88.png"}, {"name": "六筒", "file": "tile_89.png"}, {"name": "六筒", "file": "tile_90.png"}, {"name": "六筒", "file": "tile_91.png"}, {"name": "六索", "file": "tile_92.png"}, {"name": "六索", "file": "tile_93.png"}, {"name": "六索", "file": "tile_94.png"}, {"name": "六索", "file": "tile_95.png"}, {"name": "白", "file": "tile_96.png"}, {"name": "白", "file": "tile_97.png"}, {"name": "白", "file": "tile_98.png"}, {"name": "白", "file": "tile_99.png"}, {"name": "七萬", "file": "tile_100.png"}, {"name": "七萬", "file": "tile_101.png"}, {"name": "七萬", "file": "tile_102.png"}, {"name": "七萬", "file": "tile_103.png"}, {"name": "七筒", "file": "tile_104.png"}, {"name": "七筒", "file": "tile_105.png"}, {"name": "七筒", "file": "tile_106.png"}, {"name": "七筒", "file": "tile_107.png"}, {"name": "七索", "file": "tile_108.png"}, {"name": "七索", "file": "tile_109.png"}, {"name": "七索", "file": "tile_110.png"}, {"name": "七索", "file": "tile_111.png"}, {"name": "梅", "file": "tile_112.png"}, {"name": "蘭", "file": "tile_113.png"}, {"name": "菊", "file": "tile_114.png"}, {"name": "竹", "file": "tile_115.png"}, {"name": "八萬", "file": "tile_116.png"}, {"name": "八萬", "file": "tile_117.png"}, {"name": "八萬", "file": "tile_118.png"}, {"name": "八萬", "file": "tile_119.png"}, {"name": "八筒", "file": "tile_120.png"}, {"name": "八筒", "file": "tile_121.png"}, {"name": "八筒", "file": "tile_122.png"}, {"name": "八筒", "file": "tile_123.png"}, {"name": "八索", "file": "tile_124.png"}, {"name": "八索", "file": "tile_125.png"}, {"name": "八索", "file": "tile_126.png"}, {"name": "八索", "file": "tile_127.png"}, {"name": "春", "file": "tile_128.png"}, {"name": "夏", "file": "tile_129.png"}, {"name": "秋", "file": "tile_130.png"}, {"name": "冬", "file": "tile_131.png"}, {"name": "九萬", "file": "tile_132.png"}, {"name": "九萬", "file": "tile_133.png"}, {"name": "九萬", "file": "tile_134.png"}, {"name": "九萬", "file": "tile_135.png"}, {"name": "九筒", "file": "tile_136.png"}, {"name": "九筒", "file": "tile_137.png"}, {"name": "九筒", "file": "tile_138.png"}, {"name": "九筒", "file": "tile_139.png"}, {"name": "九索", "file": "tile_140.png"}, {"name": "九索", "file": "tile_141.png"}, {"name": "九索", "file": "tile_142.png"}, {"name": "九索", "file": "tile_143.png"}];
-let deck=[];
-function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
-function resetDeck(){deck=[...deck0];shuffle(deck);left.innerText='剩餘:'+deck.length;}
-function draw(){if(!deck.length)return alert('抽完');let t=deck.pop();img.src=t.file;name.innerText=t.name;left.innerText='剩餘:'+deck.length;}
+// ==============================
+// Paste your full deck here.
+// Example:
+// const deck0 = [
+//     { name:"東", file:"tile_0.png" },
+//     ...
+// ];
+// ==============================
+const deck0 = [{"name": "東", "file": "tile_0.png"}, {"name": "東", "file": "tile_1.png"}, {"name": "東", "file": "tile_2.png"}, {"name": "東", "file": "tile_3.png"}, {"name": "一萬", "file": "tile_4.png"}, {"name": "一萬", "file": "tile_5.png"}, {"name": "一萬", "file": "tile_6.png"}, {"name": "一萬", "file": "tile_7.png"}, {"name": "一筒", "file": "tile_8.png"}, {"name": "一筒", "file": "tile_9.png"}, {"name": "一筒", "file": "tile_10.png"}, {"name": "一筒", "file": "tile_11.png"}, {"name": "一索", "file": "tile_12.png"}, {"name": "一索", "file": "tile_13.png"}, {"name": "一索", "file": "tile_14.png"}, {"name": "一索", "file": "tile_15.png"}, {"name": "西", "file": "tile_16.png"}, {"name": "西", "file": "tile_17.png"}, {"name": "西", "file": "tile_18.png"}, {"name": "西", "file": "tile_19.png"}, {"name": "二萬", "file": "tile_20.png"}, {"name": "二萬", "file": "tile_21.png"}, {"name": "二萬", "file": "tile_22.png"}, {"name": "二萬", "file": "tile_23.png"}, {"name": "二筒", "file": "tile_24.png"}, {"name": "二筒", "file": "tile_25.png"}, {"name": "二筒", "file": "tile_26.png"}, {"name": "二筒", "file": "tile_27.png"}, {"name": "二索", "file": "tile_28.png"}, {"name": "二索", "file": "tile_29.png"}, {"name": "二索", "file": "tile_30.png"}, {"name": "二索", "file": "tile_31.png"}, {"name": "南", "file": "tile_32.png"}, {"name": "南", "file": "tile_33.png"}, {"name": "南", "file": "tile_34.png"}, {"name": "南", "file": "tile_35.png"}, {"name": "三萬", "file": "tile_36.png"}, {"name": "三萬", "file": "tile_37.png"}, {"name": "三萬", "file": "tile_38.png"}, {"name": "三萬", "file": "tile_39.png"}, {"name": "三筒", "file": "tile_40.png"}, {"name": "三筒", "file": "tile_41.png"}, {"name": "三筒", "file": "tile_42.png"}, {"name": "三筒", "file": "tile_43.png"}, {"name": "三索", "file": "tile_44.png"}, {"name": "三索", "file": "tile_45.png"}, {"name": "三索", "file": "tile_46.png"}, {"name": "三索", "file": "tile_47.png"}, {"name": "北", "file": "tile_48.png"}, {"name": "北", "file": "tile_49.png"}, {"name": "北", "file": "tile_50.png"}, {"name": "北", "file": "tile_51.png"}, {"name": "四萬", "file": "tile_52.png"}, {"name": "四萬", "file": "tile_53.png"}, {"name": "四萬", "file": "tile_54.png"}, {"name": "四萬", "file": "tile_55.png"}, {"name": "四筒", "file": "tile_56.png"}, {"name": "四筒", "file": "tile_57.png"}, {"name": "四筒", "file": "tile_58.png"}, {"name": "四筒", "file": "tile_59.png"}, {"name": "四索", "file": "tile_60.png"}, {"name": "四索", "file": "tile_61.png"}, {"name": "四索", "file": "tile_62.png"}, {"name": "四索", "file": "tile_63.png"}, {"name": "中", "file": "tile_64.png"}, {"name": "中", "file": "tile_65.png"}, {"name": "中", "file": "tile_66.png"}, {"name": "中", "file": "tile_67.png"}, {"name": "伍萬", "file": "tile_68.png"}, {"name": "伍萬", "file": "tile_69.png"}, {"name": "伍萬", "file": "tile_70.png"}, {"name": "伍萬", "file": "tile_71.png"}, {"name": "五筒", "file": "tile_72.png"}, {"name": "五筒", "file": "tile_73.png"}, {"name": "五筒", "file": "tile_74.png"}, {"name": "五筒", "file": "tile_75.png"}, {"name": "五索", "file": "tile_76.png"}, {"name": "五索", "file": "tile_77.png"}, {"name": "五索", "file": "tile_78.png"}, {"name": "五索", "file": "tile_79.png"}, {"name": "發", "file": "tile_80.png"}, {"name": "發", "file": "tile_81.png"}, {"name": "發", "file": "tile_82.png"}, {"name": "發", "file": "tile_83.png"}, {"name": "六萬", "file": "tile_84.png"}, {"name": "六萬", "file": "tile_85.png"}, {"name": "六萬", "file": "tile_86.png"}, {"name": "六萬", "file": "tile_87.png"}, {"name": "六筒", "file": "tile_88.png"}, {"name": "六筒", "file": "tile_89.png"}, {"name": "六筒", "file": "tile_90.png"}, {"name": "六筒", "file": "tile_91.png"}, {"name": "六索", "file": "tile_92.png"}, {"name": "六索", "file": "tile_93.png"}, {"name": "六索", "file": "tile_94.png"}, {"name": "六索", "file": "tile_95.png"}, {"name": "白", "file": "tile_96.png"}, {"name": "白", "file": "tile_97.png"}, {"name": "白", "file": "tile_98.png"}, {"name": "白", "file": "tile_99.png"}, {"name": "七萬", "file": "tile_100.png"}, {"name": "七萬", "file": "tile_101.png"}, {"name": "七萬", "file": "tile_102.png"}, {"name": "七萬", "file": "tile_103.png"}, {"name": "七筒", "file": "tile_104.png"}, {"name": "七筒", "file": "tile_105.png"}, {"name": "七筒", "file": "tile_106.png"}, {"name": "七筒", "file": "tile_107.png"}, {"name": "七索", "file": "tile_108.png"}, {"name": "七索", "file": "tile_109.png"}, {"name": "七索", "file": "tile_110.png"}, {"name": "七索", "file": "tile_111.png"}, {"name": "梅", "file": "tile_112.png"}, {"name": "蘭", "file": "tile_113.png"}, {"name": "菊", "file": "tile_114.png"}, {"name": "竹", "file": "tile_115.png"}, {"name": "八萬", "file": "tile_116.png"}, {"name": "八萬", "file": "tile_117.png"}, {"name": "八萬", "file": "tile_118.png"}, {"name": "八萬", "file": "tile_119.png"}, {"name": "八筒", "file": "tile_120.png"}, {"name": "八筒", "file": "tile_121.png"}, {"name": "八筒", "file": "tile_122.png"}, {"name": "八筒", "file": "tile_123.png"}, {"name": "八索", "file": "tile_124.png"}, {"name": "八索", "file": "tile_125.png"}, {"name": "八索", "file": "tile_126.png"}, {"name": "八索", "file": "tile_127.png"}, {"name": "春", "file": "tile_128.png"}, {"name": "夏", "file": "tile_129.png"}, {"name": "秋", "file": "tile_130.png"}, {"name": "冬", "file": "tile_131.png"}, {"name": "九萬", "file": "tile_132.png"}, {"name": "九萬", "file": "tile_133.png"}, {"name": "九萬", "file": "tile_134.png"}, {"name": "九萬", "file": "tile_135.png"}, {"name": "九筒", "file": "tile_136.png"}, {"name": "九筒", "file": "tile_137.png"}, {"name": "九筒", "file": "tile_138.png"}, {"name": "九筒", "file": "tile_139.png"}, {"name": "九索", "file": "tile_140.png"}, {"name": "九索", "file": "tile_141.png"}, {"name": "九索", "file": "tile_142.png"}, {"name": "九索", "file": "tile_143.png"}];
+
+let deck = [];
+
+const left = document.getElementById("left");
+const img = document.getElementById("img");
+const name = document.getElementById("name");
+const history = document.getElementById("history");
+
+function shuffle(array){
+    for(let i=array.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [array[i],array[j]]=[array[j],array[i]];
+    }
+}
+
+function clearDisplay(){
+    img.src = "blank.jpg";
+    name.textContent = "";
+}
+
+function clearHistory(){
+    history.innerHTML="";
+}
+
+function resetDeck(){
+
+    deck=[...deck0];
+    shuffle(deck);
+
+    left.textContent="剩餘："+deck.length;
+
+    clearDisplay();
+    clearHistory();
+}
+
+function draw(){
+
+    if(deck.length===0){
+        alert("抽完");
+        return;
+    }
+
+    const tile=deck.pop();
+
+    img.src=tile.file;
+    name.textContent=tile.name;
+
+    left.textContent="剩餘："+deck.length;
+
+    const item=document.createElement("div");
+    item.className="history-item";
+
+    const number=document.createElement("span");
+    number.textContent=(deck0.length-deck.length)+".";
+
+    const tileName=document.createElement("span");
+    tileName.textContent=tile.name;
+
+    item.appendChild(number);
+    item.appendChild(tileName);
+
+    history.prepend(item);
+}
+
 resetDeck();
 </script>
-</body></html>
+
+</body>
+</html>
