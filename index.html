@@ -149,6 +149,8 @@ button:active{
 </div>
 
 <script>
+const imageCache = {};
+let imagesLoaded = false;
 // ==============================
 // Paste your full deck here.
 // Example:
@@ -165,6 +167,37 @@ const left = document.getElementById("left");
 const img = document.getElementById("img");
 const name = document.getElementById("name");
 const history = document.getElementById("history");
+
+async function preloadImages() {
+    const promises = deck0.map(tile => {
+        return new Promise((resolve) => {
+            const image = new Image();
+
+            image.onload = () => {
+                imageCache[tile.file] = image;
+                resolve();
+            };
+
+            image.onerror = () => {
+                console.warn("Failed to load:", tile.file);
+                resolve(); // Continue even if one image fails
+            };
+
+            image.src = tile.file;
+        });
+    });
+
+    // Also preload the blank image
+    promises.push(new Promise(resolve => {
+        const image = new Image();
+        image.onload = resolve;
+        image.onerror = resolve;
+        image.src = "blank.jpg";
+    }));
+
+    await Promise.all(promises);
+    imagesLoaded = true;
+}
 
 function shuffle(array){
     for(let i=array.length-1;i>0;i--){
@@ -222,7 +255,11 @@ function draw(){
     history.prepend(item);
 }
 
-resetDeck();
+(async () => {
+    left.textContent = "正在載入圖片...";
+    await preloadImages();
+    resetDeck();
+})();
 </script>
 
 </body>
